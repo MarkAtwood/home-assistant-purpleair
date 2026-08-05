@@ -22,6 +22,7 @@ AQI_BREAKPOINTS = {
     ],
 }
 PARTICLE_PROPS = ['pm1_0_atm', 'pm2_5_atm', 'pm10_0_atm']
+PARTICLE_COUNT_PROPS = ['p_0_3_um', 'p_0_5_um', 'p_1_0_um', 'p_2_5_um', 'p_5_0_um', 'p_10_0_um']
 # fmt: on
 
 # fmt: off
@@ -39,9 +40,47 @@ SENSORS_MAP = {
     'temperature':             {'key': 'current_temp',     'uom': UnitOfTemperature.FAHRENHEIT,       'icon': 'mdi:thermometer'},
     'dewpoint':                {'key': 'current_dewpoint', 'uom': UnitOfTemperature.FAHRENHEIT,       'icon': 'mdi:water-outline'},
     'pressure':                {'key': 'pressure',         'uom': UnitOfPressure.HPA,                 'icon': 'mdi:gauge'},
-    'rssi':                    {'key': 'rssi',             'uom': SIGNAL_STRENGTH_DECIBELS_MILLIWATT, 'icon': 'mdi:wifi'}
+    'rssi':                    {'key': 'rssi',             'uom': SIGNAL_STRENGTH_DECIBELS_MILLIWATT, 'icon': 'mdi:wifi'},
+    # Particle counts (particles per 0.1L air) - averaged for dual, raw for single
+    'particle_count_0_3':      {'key': 'p_0_3_um',         'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_0_5':      {'key': 'p_0_5_um',         'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_1_0':      {'key': 'p_1_0_um',         'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_2_5':      {'key': 'p_2_5_um',         'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_5_0':      {'key': 'p_5_0_um',         'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_10_0':     {'key': 'p_10_0_um',        'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    # Particle counts - raw Channel A (dual-laser sensors only)
+    'particle_count_0_3_a':    {'key': 'p_0_3_um_a',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_0_5_a':    {'key': 'p_0_5_um_a',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_1_0_a':    {'key': 'p_1_0_um_a',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_2_5_a':    {'key': 'p_2_5_um_a',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_5_0_a':    {'key': 'p_5_0_um_a',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_10_0_a':   {'key': 'p_10_0_um_a',      'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    # Particle counts - raw Channel B (dual-laser sensors only)
+    'particle_count_0_3_b':    {'key': 'p_0_3_um_b',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_0_5_b':    {'key': 'p_0_5_um_b',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_1_0_b':    {'key': 'p_1_0_um_b',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_2_5_b':    {'key': 'p_2_5_um_b',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_5_0_b':    {'key': 'p_5_0_um_b',       'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    'particle_count_10_0_b':   {'key': 'p_10_0_um_b',      'uom': '#/0.1L',                           'icon': 'mdi:blur'},
+    # Particle count channel health (dual-laser only)
+    'particle_count_channel_status': {'key': 'particle_count_status', 'uom': None,              'icon': 'mdi:check-circle'},
 }
-SENSORS_DUAL_ONLY = ['pm2_5_aqi_b_raw']
+SENSORS_DUAL_ONLY = [
+    'pm2_5_aqi_b_raw',
+    'particle_count_0_3_a',
+    'particle_count_0_5_a',
+    'particle_count_1_0_a',
+    'particle_count_2_5_a',
+    'particle_count_5_0_a',
+    'particle_count_10_0_a',
+    'particle_count_0_3_b',
+    'particle_count_0_5_b',
+    'particle_count_1_0_b',
+    'particle_count_2_5_b',
+    'particle_count_5_0_b',
+    'particle_count_10_0_b',
+    'particle_count_channel_status',
+]
 # fmt: on
 
 MANUFACTURER = "Purple Air"

@@ -7,7 +7,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval, async_track_point_in_utc_time
 from homeassistant.util import dt
 
-from .const import AQI_BREAKPOINTS, DISPATCHER_PURPLE_AIR, PARTICLE_PROPS, LOCAL_SCAN_INTERVAL, LOCAL_URL_FORMAT, \
+from .const import AQI_BREAKPOINTS, DISPATCHER_PURPLE_AIR, PARTICLE_PROPS, PARTICLE_COUNT_PROPS, LOCAL_SCAN_INTERVAL, LOCAL_URL_FORMAT, \
     TEMP_ADJUSTMENT, HUMIDITY_ADJUSTMENT
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,6 +87,52 @@ def process_pm_readings(json_result, is_dual = False):
     readings['aqi_epa'] = calc_aqi(readings['pm2_5_atm'], 'pm2_5')
     readings['aqi_lrapa'] = calc_aqi(lrapa(readings['pm2_5_atm']), 'pm2_5')
     return readings
+
+
+def process_particle_counts(json_result, is_dual=False):
+    """Processes particle count readings (particles per 0.1L air)"""
+    readings = {}
+    a_dead_count = 0
+    b_dead_count = 0
+
+    for prop in PARTICLE_COUNT_PROPS:
+        if prop not in json_result:
+            readings[prop] = None
+            continue
+
+        a = float(json_result[prop])
+        prop_a = prop + '_a'  # Property name for raw sensor A
+        prop_b = prop + '_b'  # Property name for raw sensor B
+        if is_dual and prop_b in json_result:
+            b = float(json_result[prop_b])
+            # Store raw A and B channel values
+            readings[prop_a] = a
+            readings[prop_b] = b
+            # Use valid channel if one is dead (near-zero while other isn't)
+            a_dead = a < 1 and b > 10
+            b_dead = b < 1 and a > 10
+            if a_dead:
+                readings[prop] = b
+                a_dead_count += 1
+            elif b_dead:
+                readings[prop] = a
+                b_dead_count += 1
+            else:
+                readings[prop] = round((a + b) / 2, 1)
+        else:
+            readings[prop] = a
+
+    # Set channel status for dual sensors
+    if is_dual:
+        if a_dead_count >= 3:
+            readings['particle_count_status'] = 'Channel A Dead'
+        elif b_dead_count >= 3:
+            readings['particle_count_status'] = 'Channel B Dead'
+        else:
+            readings['particle_count_status'] = 'Good'
+
+    return readings
+
 
 def process_dual_sensor_readings(a, b):
     value = round((a + b) / 2, 1)
@@ -203,6 +249,7 @@ class PurpleAirApi:
                 'is_dual': is_dual
             }
             nodes[pa_sensor_id].update(process_pm_readings(result, is_dual))
+            nodes[pa_sensor_id].update(process_particle_counts(result, is_dual))
             nodes[pa_sensor_id].update(process_heat_adjustments(result))
             _LOGGER.debug('Json results for %s: %s', pa_sensor_id, result)
             _LOGGER.debug('Readings for %s: %s', pa_sensor_id, nodes[pa_sensor_id])

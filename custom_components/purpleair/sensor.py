@@ -3,6 +3,7 @@ import logging
 
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.util import slugify
 
 from .const import DISPATCHER_PURPLE_AIR, DOMAIN, MANUFACTURER, SENSORS_MAP, SENSORS_DUAL_ONLY, MODEL_PA_FLEX, MODEL_PA_2
 
@@ -20,7 +21,7 @@ async def async_setup_entry(hass, config_entry, async_schedule_add_entities):
 
     entities = []
     for index, entity_desc in SENSORS_MAP.items():
-        if is_dual or entity_desc['key'] not in SENSORS_DUAL_ONLY:
+        if is_dual or index not in SENSORS_DUAL_ONLY:
             entities.append(PurpleAirQualitySensor(hass, index, config_entry, entity_desc))
 
     async_schedule_add_entities(entities)
@@ -28,6 +29,7 @@ async def async_setup_entry(hass, config_entry, async_schedule_add_entities):
 
 class PurpleAirQualitySensor(SensorEntity):
     """Sensor data reading from purple air device"""
+
     def __init__(self, hass, index, config_entry, entity_desc):
         self._data = config_entry.data
         self._hass = hass
@@ -42,6 +44,8 @@ class PurpleAirQualitySensor(SensorEntity):
         self.pa_sensor_id = self._data['id']
         self.pa_sensor_name = self._data['title']
         self.pa_ip_address = self._data['ip_address']
+        # Set suggested_object_id to control entity_id generation
+        self._attr_suggested_object_id = f"{slugify(self.pa_sensor_name)}_{index}"
 
     @property
     def device_info(self):
@@ -51,7 +55,7 @@ class PurpleAirQualitySensor(SensorEntity):
                (DOMAIN, self.pa_sensor_id),
                (DOMAIN, self.pa_ip_address)
            },
-           "name": f'{self.pa_sensor_name} {MANUFACTURER}',
+           "name": self.pa_sensor_name,
            "manufacturer": MANUFACTURER,
            "model": f'{self._data["model"]} ({self.pa_ip_address})',
            "sw_version": self._data['sw_version'],
